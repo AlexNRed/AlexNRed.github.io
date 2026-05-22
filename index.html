@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aiden Nguyen — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0f0f0f;
+      --surface: #161616;
+      --card:    #1c1c1c;
+      --text:    #f0ede8;
+      --muted:   #7a7a7a;
+      --border:  #2a2a2a;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideDown{ from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .h1{animation:fadeUp .6s .05s ease forwards;opacity:0}
+    .h2{animation:fadeUp .6s .15s ease forwards;opacity:0}
+    .h3{animation:fadeUp .6s .25s ease forwards;opacity:0}
+    .h4{animation:fadeUp .6s .35s ease forwards;opacity:0}
+    .nav-in{animation:slideDown .5s ease forwards}
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .proj-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+    .sk-grid   {display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    @media(max-width:720px){
+      .about-grid{grid-template-columns:1fr;gap:36px}
+      .hide-mob{display:none!important}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  const PROJECTS = [
+    { icon:"⚡", title:"Smart Grid Fault Simulator",
+      desc:"Simulates electrical grid faults with real-time detection, fault isolation, and visual topology analysis. Built as a collaborative class project.",
+      tags:["Python","Simulation","Automation"], link:"https://github.com/phAPCSA25period1/final-project-AlexNRed" },
+    { icon:"🏠", title:"Home Automation System",
+      desc:"Arduino IoT home automation using Blynk 2.0 for real-time monitoring and remote control of home devices via a mobile dashboard.",
+      tags:["Arduino","Blynk 2.0","C++","IoT"], link:"https://wokwi.com/projects/462852090089262081" },
+    { icon:"💧", title:"Water Level Detector",
+      desc:"Embedded sensor system using Arduino for real-time water level monitoring with threshold-based alerts and visual indicator outputs.",
+      tags:["Arduino","Sensors","C++"], link:"https://wokwi.com/projects/462683937737637889" },
+    { icon:"🎮", title:"Python RPG Game",
+      desc:"A text-based RPG built in Python featuring combat mechanics, inventory management, and branching story progression using OOP.",
+      tags:["Python","OOP","Game Design"], link:"https://github.com/AlexNRed/RPG-Game" },
+  ];
+
+  const SKILLS = [
+    { name:"Python",         pct:80 },
+    { name:"Arduino / C++",  pct:75 },
+    { name:"IoT & Embedded", pct:70 },
+    { name:"Automation",     pct:72 },
+    { name:"Git & GitHub",   pct:70 },
+    { name:"HTML & CSS",     pct:65 },
+  ];
+
+  function Label({ children }) {
+    return <span style={{fontFamily:"Syne",fontWeight:700,fontSize:"0.72rem",color:"var(--muted)",
+      letterSpacing:"0.14em",textTransform:"uppercase",display:"block",marginBottom:"10px"}}>{children}</span>;
+  }
+
+  function Pill({ children, href, onClick, primary, outline }) {
+    const [h,setH] = useState(false);
+    const s = primary ? {
+      background: h ? "#e0ddd8" : "var(--text)", color:"#0f0f0f",
+      transform: h?"translateY(-2px)":"none",
+      boxShadow: h?"0 8px 24px rgba(240,237,232,.12)":"none",
+    } : {
+      background:"transparent", color: h?"var(--text)":"var(--muted)",
+      border:`1.5px solid ${h?"var(--text)":"var(--border)"}`,
+      transform: h?"translateY(-2px)":"none",
+    };
+    const base = {display:"inline-block",padding:"13px 28px",borderRadius:"99px",
+      fontFamily:"Nunito",fontWeight:700,fontSize:"0.93rem",cursor:"pointer",
+      border:"none",textDecoration:"none",transition:"all .22s ease",...s};
+    return href
+      ? <a href={href} target="_blank" rel="noopener noreferrer" style={base}
+          onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}>{children}</a>
+      : <button style={base} onClick={onClick}
+          onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}>{children}</button>;
+  }
+
+  function Navbar() {
+    const [scrolled,setScrolled] = useState(false);
+    useEffect(()=>{
+      const fn=()=>setScrolled(window.scrollY>30);
+      window.addEventListener("scroll",fn);
+      return ()=>window.removeEventListener("scroll",fn);
+    },[]);
+    const go = id => document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+    return (
+      <nav className="nav-in" style={{
+        position:"fixed",top:0,left:0,right:0,zIndex:100,height:"62px",padding:"0 6%",
+        display:"flex",alignItems:"center",justifyContent:"space-between",
+        background: scrolled?"rgba(15,15,15,.88)":"transparent",
+        backdropFilter: scrolled?"blur(16px)":"none",
+        borderBottom: scrolled?"1px solid var(--border)":"1px solid transparent",
+        transition:"all .3s ease",
+      }}>
+        <span onClick={()=>window.scrollTo({top:0,behavior:"smooth"})} style={{
+          fontFamily:"Syne",fontWeight:800,fontSize:"1.1rem",letterSpacing:"-0.02em",
+          cursor:"pointer",color:"var(--text)",
+        }}>AN<span style={{color:"var(--muted)"}}>.</span></span>
+
+        <div className="hide-mob" style={{display:"flex",gap:"2rem",alignItems:"center"}}>
+          {["about","projects","skills","contact"].map(id=>(
+            <button key={id} onClick={()=>go(id)} style={{
+              background:"none",border:"none",cursor:"pointer",fontFamily:"Nunito",
+              fontWeight:600,fontSize:"0.88rem",color:"var(--muted)",transition:"color .18s",
+            }}
+              onMouseEnter={e=>e.target.style.color="var(--text)"}
+              onMouseLeave={e=>e.target.style.color="var(--muted)"}
+            >{id.charAt(0).toUpperCase()+id.slice(1)}</button>
+          ))}
+          <a href="mailto:alexnredplayz@gmail.com" style={{
+            background:"var(--text)",color:"#0f0f0f",padding:"8px 20px",borderRadius:"99px",
+            textDecoration:"none",fontFamily:"Nunito",fontWeight:700,fontSize:"0.82rem",
+            transition:"all .2s",display:"inline-block",
+          }}
+            onMouseEnter={e=>{e.currentTarget.style.opacity=".85";e.currentTarget.style.transform="translateY(-1px)";}}
+            onMouseLeave={e=>{e.currentTarget.style.opacity="1";e.currentTarget.style.transform="translateY(0)";}}
+          >Hire me</a>
+        </div>
+      </nav>
+    );
+  }
+
+  function Hero() {
+    return (
+      <section style={{minHeight:"100vh",display:"flex",alignItems:"center",
+        padding:"0 6%",position:"relative",background:"var(--bg)",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-10%",right:"-5%",width:"50vw",height:"50vw",
+          maxWidth:"600px",pointerEvents:"none",borderRadius:"50%",
+          background:"radial-gradient(circle at 60% 40%,rgba(240,237,232,.04) 0%,transparent 65%)"}}/>
+
+        <div style={{maxWidth:"680px",paddingTop:"80px",position:"relative"}}>
+          <div className="h1" style={{display:"inline-flex",alignItems:"center",gap:"8px",
+            background:"#1e1e1e",color:"var(--muted)",padding:"6px 16px",borderRadius:"99px",
+            fontSize:"0.78rem",fontWeight:700,marginBottom:"30px",border:"1px solid var(--border)"}}>
+            <span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#4ade80",
+              display:"inline-block",animation:"pulse 2s infinite"}}/>
+            Open to opportunities
+          </div>
+
+          <h1 className="h2" style={{fontFamily:"Syne",fontWeight:800,
+            fontSize:"clamp(2.5rem,7vw,4.8rem)",lineHeight:1.08,
+            letterSpacing:"-0.03em",marginBottom:"20px",color:"var(--text)"}}>
+            Hi, I'm<br/>Aiden Nguyen
+          </h1>
+
+          <p className="h3" style={{fontSize:"clamp(1rem,2.5vw,1.13rem)",color:"var(--muted)",
+            maxWidth:"460px",lineHeight:1.78,marginBottom:"38px"}}>
+            Aspiring automation engineer building real projects in embedded
+            systems, IoT, and software. Based in San Diego, CA.
+          </p>
+
+          <div className="h4" style={{display:"flex",gap:"12px",flexWrap:"wrap"}}>
+            <Pill primary onClick={()=>document.getElementById("projects")?.scrollIntoView({behavior:"smooth"})}>
+              View Projects
+            </Pill>
+            <Pill outline href="mailto:alexnredplayz@gmail.com">Get in touch</Pill>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  function About() {
+    const stats=[{v:"4+",l:"Projects Built"},{v:"2K+",l:"Lines of Code"},
+                 {v:"3",l:"Languages"},{v:"2+",l:"Years Building"}];
+    return (
+      <section id="about" style={{padding:"108px 6%",background:"var(--surface)"}}>
+        <div style={{maxWidth:"1080px",margin:"0 auto"}}>
+          <div className="about-grid">
+            <div>
+              <Label>About Me</Label>
+              <h2 style={{fontFamily:"Syne",fontWeight:800,fontSize:"clamp(1.7rem,4vw,2.4rem)",
+                letterSpacing:"-0.025em",lineHeight:1.15,marginBottom:"22px",color:"var(--text)"}}>
+                Building things that{" "}
+                <em style={{fontStyle:"italic",color:"var(--muted)"}}>actually work</em>
+              </h2>
+              <p style={{color:"var(--muted)",lineHeight:1.85,marginBottom:"16px"}}>
+                I'm a high school student from San Diego with a passion for engineering
+                and problem-solving. My focus is automation engineering and embedded
+                systems — making systems smarter and more efficient.
+              </p>
+              <p style={{color:"var(--muted)",lineHeight:1.85}}>
+                Outside of coding, I volunteer at a soup kitchen and manage social media
+                for school clubs: the Full Plate Project, STEMsports, and an ultimate frisbee team.
+              </p>
+            </div>
+            <div className="stats-grid">
+              {stats.map(s=>(
+                <div key={s.l} style={{background:"var(--card)",padding:"26px 20px",borderRadius:"22px",
+                  border:"1px solid var(--border)",textAlign:"center",transition:"all .22s ease"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="#222";e.currentTarget.style.transform="translateY(-3px)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="var(--card)";e.currentTarget.style.transform="translateY(0)";}}
+                >
+                  <div style={{fontFamily:"Syne",fontWeight:800,fontSize:"2rem",
+                    color:"var(--text)",lineHeight:1}}>{s.v}</div>
+                  <div style={{fontSize:"0.78rem",color:"var(--muted)",marginTop:"8px",fontWeight:600}}>{s.l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  function Projects() {
+    return (
+      <section id="projects" style={{padding:"108px 6%",background:"var(--bg)"}}>
+        <div style={{maxWidth:"1080px",margin:"0 auto"}}>
+          <Label>Work</Label>
+          <h2 style={{fontFamily:"Syne",fontWeight:800,fontSize:"clamp(1.7rem,4vw,2.4rem)",
+            letterSpacing:"-0.025em",marginBottom:"48px",color:"var(--text)"}}>Projects</h2>
+          <div className="proj-grid">
+            {PROJECTS.map(p=>{
+              const [h,setH] = useState(false);
+              return (
+                <a key={p.title} href={p.link} target="_blank" rel="noopener noreferrer"
+                   style={{textDecoration:"none",display:"block"}}
+                   onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}>
+                  <div style={{background:h?"#222":"var(--card)",height:"100%",
+                    display:"flex",flexDirection:"column",
+                    border:`1px solid ${h?"#3a3a3a":"var(--border)"}`,
+                    borderRadius:"22px",padding:"28px",
+                    transform:h?"translateY(-4px)":"none",transition:"all .25s ease"}}>
+                    <div style={{width:"46px",height:"46px",borderRadius:"12px",marginBottom:"18px",
+                      background:"#1a1a1a",fontSize:"1.3rem",border:"1px solid var(--border)",
+                      display:"flex",alignItems:"center",justifyContent:"center"}}>{p.icon}</div>
+                    <h3 style={{fontFamily:"Syne",fontWeight:700,fontSize:"1rem",
+                      color:"var(--text)",marginBottom:"10px",lineHeight:1.35}}>{p.title}</h3>
+                    <p style={{fontSize:"0.87rem",color:"var(--muted)",lineHeight:1.75,
+                      flexGrow:1,marginBottom:"20px"}}>{p.desc}</p>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"18px"}}>
+                      {p.tags.map(t=>(
+                        <span key={t} style={{background:"#1a1a1a",color:"var(--muted)",
+                          padding:"4px 10px",borderRadius:"99px",fontSize:"0.72rem",
+                          fontWeight:700,border:"1px solid var(--border)"}}>{t}</span>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:"6px",
+                      color:h?"var(--text)":"var(--muted)",fontSize:"0.84rem",fontWeight:700,transition:"color .2s"}}>
+                      View Project
+                      <span style={{transition:"transform .2s",transform:h?"translateX(5px)":"none"}}>→</span>
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  function Skills() {
+    return (
+      <section id="skills" style={{padding:"108px 6%",background:"var(--surface)"}}>
+        <div style={{maxWidth:"1080px",margin:"0 auto"}}>
+          <Label>Expertise</Label>
+          <h2 style={{fontFamily:"Syne",fontWeight:800,fontSize:"clamp(1.7rem,4vw,2.4rem)",
+            letterSpacing:"-0.025em",marginBottom:"48px",color:"var(--text)"}}>Skills</h2>
+          <div className="sk-grid">
+            {SKILLS.map(s=>{
+              const [filled,setFilled] = useState(false);
+              const ref = useRef(null);
+              useEffect(()=>{
+                const obs=new IntersectionObserver(([e])=>{ if(e.isIntersecting) setFilled(true); },{threshold:.5});
+                if(ref.current) obs.observe(ref.current);
+                return ()=>obs.disconnect();
+              },[]);
+              return (
+                <div key={s.name} ref={ref} style={{background:"var(--card)",padding:"20px 24px",
+                  borderRadius:"14px",border:"1px solid var(--border)"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:"10px"}}>
+                    <span style={{fontWeight:700,fontSize:"0.88rem",color:"var(--text)"}}>{s.name}</span>
+                    <span style={{fontSize:"0.78rem",color:"var(--muted)",fontWeight:600}}>{s.pct}%</span>
+                  </div>
+                  <div style={{height:"6px",background:"#1a1a1a",borderRadius:"99px",
+                    overflow:"hidden",border:"1px solid var(--border)"}}>
+                    <div style={{height:"100%",borderRadius:"99px",background:"var(--text)",
+                      width:filled?`${s.pct}%`:"0%",
+                      transition:"width 1.1s cubic-bezier(.34,1.56,.64,1)"}}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  function Contact() {
+    return (
+      <section id="contact" style={{padding:"108px 6%",background:"var(--bg)"}}>
+        <div style={{maxWidth:"540px",margin:"0 auto",textAlign:"center"}}>
+          <Label>Contact</Label>
+          <h2 style={{fontFamily:"Syne",fontWeight:800,fontSize:"clamp(1.7rem,4vw,2.4rem)",
+            letterSpacing:"-0.025em",marginBottom:"18px",color:"var(--text)"}}>Let's connect</h2>
+          <p style={{color:"var(--muted)",lineHeight:1.82,marginBottom:"40px",fontSize:"0.97rem"}}>
+            Whether it's a project collab, internship opportunity, or just a
+            chat about engineering — I'd love to hear from you.
+          </p>
+          <Pill primary href="mailto:alexnredplayz@gmail.com">alexnredplayz@gmail.com</Pill>
+          <div style={{display:"flex",justifyContent:"center",gap:"12px",marginTop:"24px"}}>
+            {[{l:"GitHub",u:"https://github.com/AlexNRed"},{l:"Wokwi",u:"https://wokwi.com"}].map(s=>(
+              <a key={s.l} href={s.u} target="_blank" rel="noopener noreferrer"
+                style={{padding:"10px 22px",borderRadius:"99px",textDecoration:"none",
+                  fontSize:"0.84rem",fontWeight:700,border:"1px solid var(--border)",
+                  color:"var(--muted)",transition:"all .2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.color="var(--text)";e.currentTarget.style.borderColor="#3a3a3a";e.currentTarget.style.background="#1e1e1e";}}
+                onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="transparent";}}
+              >{s.l}</a>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  function App() {
+    return (
+      <>
+        <Navbar/>
+        <Hero/>
+        <About/>
+        <Projects/>
+        <Skills/>
+        <Contact/>
+        <footer style={{padding:"22px 6%",borderTop:"1px solid var(--border)",background:"var(--bg)",
+          display:"flex",justifyContent:"space-between",alignItems:"center",
+          fontSize:"0.8rem",color:"var(--muted)",flexWrap:"wrap",gap:"8px"}}>
+          <span style={{fontFamily:"Syne",fontWeight:800,color:"var(--text)"}}>Aiden Nguyen</span>
+          <span>© 2025 — Built with React</span>
+        </footer>
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
